@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hello Agent Pages</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0d1117; color: #e6edf3; line-height: 1.6; }
+    a { color: #58a6ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header { border-bottom: 1px solid #21262d; padding: 24px 0; }
+    .container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+    h1 { font-size: 2rem; font-weight: 700; }
+    h1 span { color: #58a6ff; }
+    .subtitle { color: #8b949e; margin-top: 6px; }
+    .status-bar { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 20px 24px; margin: 32px 0; display: flex; gap: 32px; flex-wrap: wrap; }
+    .stat { display: flex; flex-direction: column; gap: 2px; }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #8b949e; }
+    .stat-value { font-size: 1.1rem; font-weight: 600; }
+    .stat-value.green { color: #3fb950; }
+    .stat-value.blue { color: #58a6ff; }
+    .stat-value.yellow { color: #d29922; }
+    section { margin: 40px 0; }
+    h2 { font-size: 1.25rem; font-weight: 600; border-bottom: 1px solid #21262d; padding-bottom: 10px; margin-bottom: 20px; }
+    .step { display: flex; gap: 16px; margin-bottom: 24px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: #1f6feb; color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body h3 { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
+    .step-body p { color: #8b949e; font-size: 0.9rem; }
+    code { background: #161b22; border: 1px solid #21262d; border-radius: 4px; padding: 2px 6px; font-family: "SF Mono", Consolas, monospace; font-size: 0.85rem; color: #e6edf3; }
+    pre { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; overflow-x: auto; margin: 8px 0; }
+    pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .agent-card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+    .agent-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 12px; }
+    .badge.creator { background: #1f3a5f; color: #58a6ff; }
+    .badge.reviewer { background: #1a3a2a; color: #3fb950; }
+    .agent-card p { color: #8b949e; font-size: 0.875rem; }
+    .log-entry { border-left: 2px solid #21262d; padding: 8px 16px; margin-bottom: 8px; font-size: 0.875rem; }
+    .log-entry .log-time { color: #8b949e; font-size: 0.8rem; margin-bottom: 2px; }
+    .log-entry.merged { border-color: #3fb950; }
+    .log-entry.reviewed { border-color: #58a6ff; }
+    .log-entry.created { border-color: #d29922; }
+    footer { border-top: 1px solid #21262d; padding: 24px 0; color: #8b949e; font-size: 0.85rem; text-align: center; margin-top: 48px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>Hello <span>Agent Pages</span></h1>
+    <p class="subtitle">A live demo of autonomous Claude cloud agents managing a GitHub Pages site via PR loops.</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- AGENT_STATUS_START -->
+  <div class="status-bar">
+    <div class="stat">
+      <span class="stat-label">Status</span>
+      <span class="stat-value green">● Live</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Agent Runs</span>
+      <span class="stat-value blue" id="run-count">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">PRs Merged</span>
+      <span class="stat-value blue" id="pr-count">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Last Update</span>
+      <span class="stat-value yellow" id="last-update">Never</span>
+    </div>
+  </div>
+  <!-- AGENT_STATUS_END -->
+
+  <section>
+    <h2>What is this?</h2>
+    <p style="color:#8b949e; margin-bottom:12px;">
+      This page is created and maintained entirely by autonomous Claude cloud agents — no human pushes code here.
+      Two agents run on a schedule: one creates content updates and opens pull requests, the other reviews them, merges approved changes, and verifies the live site.
+    </p>
+    <p style="color:#8b949e;">
+      The source is at <a href="https://github.com/bsord/hello-agent-pages">github.com/bsord/hello-agent-pages</a>.
+      Follow the steps below to build the same thing yourself.
+    </p>
+  </section>
+
+  <section>
+    <h2>How the agent loop works</h2>
+    <div class="agent-card">
+      <h3><span class="badge creator">Creator</span> Runs every 2 hours</h3>
+      <p>Clones the repo, checks for open PRs with feedback, implements any requested changes, then pushes a new branch and opens a PR with updated content.</p>
+    </div>
+    <div class="agent-card">
+      <h3><span class="badge reviewer">Reviewer</span> Runs every 2 hours (30 min offset)</h3>
+      <p>Finds open PRs, reviews the diff, posts feedback if changes are needed, or approves and merges if the PR looks good. After merging, fetches the live Pages URL to verify the update went through.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Set this up yourself</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Install Claude Code</h3>
+        <p>Install the Claude Code CLI and open it in any directory.</p>
+        <pre><code>npm install -g @anthropic-ai/claude-code
+claude</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Install and authenticate the GitHub CLI</h3>
+        <p>Claude Code needs <code>gh</code> to create repos, open PRs, and push commits on your behalf.</p>
+        <pre><code># Install gh (Ubuntu/Debian)
+sudo apt install gh
+
+# Authenticate (opens browser)
+! gh auth login</code></pre>
+        <p style="margin-top:8px;">In Claude Code, prefix commands with <code>!</code> to run them interactively in your terminal.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Create a public GitHub repo</h3>
+        <p>Ask Claude Code to create the repo. It will use your <code>gh</code> auth automatically.</p>
+        <pre><code>gh repo create hello-agent-pages --public --add-readme</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Enable GitHub Pages</h3>
+        <p>Turn on Pages via the API — deploy from the <code>main</code> branch root.</p>
+        <pre><code>gh api repos/YOUR_USERNAME/hello-agent-pages/pages \
+  --method POST \
+  -f source.branch=main \
+  -f source.path=/</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h3>Push your initial index.html</h3>
+        <p>Clone the repo, add your page, commit, and push to <code>main</code>.</p>
+        <pre><code>git clone https://github.com/YOUR_USERNAME/hello-agent-pages.git
+cd hello-agent-pages
+# create index.html
+git add index.html && git commit -m "initial page"
+git push</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <h3>Get your GitHub token for the cloud agents</h3>
+        <p>The cloud agents need a token to push commits. Grab your current <code>gh</code> token:</p>
+        <pre><code>gh auth token</code></pre>
+        <p style="margin-top:8px;">Copy it — you'll embed it in the agent prompts in the next step.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <h3>Create the Creator cloud agent</h3>
+        <p>In Claude Code, use <code>/schedule</code> to create a routine that runs every 2 hours. The prompt should tell the agent to: clone the repo using the token, update content, push a branch, and open a PR.</p>
+        <pre><code>/schedule</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">8</div>
+      <div class="step-body">
+        <h3>Create the Reviewer cloud agent</h3>
+        <p>Create a second routine offset by 30 minutes (<code>30 */2 * * *</code>). This agent finds open PRs, reviews them, merges if approved, and verifies the live URL.</p>
+        <pre><code>/schedule</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">9</div>
+      <div class="step-body">
+        <h3>Watch it run</h3>
+        <p>Visit <a href="https://claude.ai/code/routines">claude.ai/code/routines</a> to see your agents, check run history, and trigger manual runs. The status bar at the top of this page updates every time the agents push a merge.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Agent activity log</h2>
+    <!-- AGENT_LOG_START -->
+    <div class="log-entry created">
+      <div class="log-time">Setup</div>
+      <div>Initial page created. Waiting for first agent run.</div>
+    </div>
+    <!-- AGENT_LOG_END -->
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Built and maintained by <a href="https://claude.ai/code">Claude Code</a> cloud agents &mdash;
+    source at <a href="https://github.com/bsord/hello-agent-pages">github.com/bsord/hello-agent-pages</a>
+  </div>
+</footer>
+
+</body>
+</html>
